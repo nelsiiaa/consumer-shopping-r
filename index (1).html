@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consumer Shopping Trends 2026 — R Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c1:#00B4D8;--c2:#7209B7;--c3:#F72585;
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;
+  --text:#f0eeff;--muted:#8884a8;--border:rgba(120,100,200,0.18);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:16px;line-height:1.7;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'DM Mono',monospace;font-size:13px;color:var(--c1);letter-spacing:.08em}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 3rem 4rem;max-width:1100px;margin:0 auto;position:relative}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.1;pointer-events:none;z-index:-1}
+.orb-1{width:500px;height:500px;background:var(--c1);top:-100px;right:-100px}
+.orb-2{width:400px;height:400px;background:var(--c3);bottom:0;left:-150px}
+.hero-tag{font-family:'DM Mono',monospace;font-size:12px;color:var(--c1);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
+.hero-tag::before{content:'';display:inline-block;width:32px;height:1px;background:var(--c1)}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.4rem,6vw,4.6rem);line-height:1.1;font-weight:400;max-width:720px;margin-bottom:2rem}
+.hero h1 em{font-style:italic;background:linear-gradient(135deg,#00B4D8,#7209B7,#F72585);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-desc{font-size:1.05rem;color:var(--muted);max-width:560px;line-height:1.8;margin-bottom:2.5rem}
+.hero-meta{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2.5rem}
+.badge{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;padding:.35rem .85rem;border-radius:2rem;border:1px solid var(--border);color:var(--muted);background:var(--bg2)}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.6rem;border-radius:4px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;text-decoration:none;transition:all .2s}
+.btn-primary{background:var(--c2);color:#fff;border:none}
+.btn-primary:hover{background:#5c07a0;transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--muted);transform:translateY(-2px)}
+.divider{width:calc(100% - 6rem);max-width:1100px;height:1px;background:var(--border);margin:0 auto}
+section{max-width:1100px;margin:0 auto;padding:5rem 3rem}
+.section-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--c1);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.6rem}
+.section-title{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,3vw,2.6rem);font-weight:400;line-height:1.2;margin-bottom:.8rem}
+.section-desc{color:var(--muted);max-width:620px;margin-bottom:3rem;line-height:1.8;font-size:15px}
+.stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:5rem}
+.stat-item{padding:1.75rem 1.25rem;border-right:1px solid var(--border);text-align:center}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'DM Serif Display',serif;font-size:2.2rem;background:linear-gradient(135deg,#00B4D8,#7209B7,#F72585);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.3rem}
+.stat-label{font-size:11px;color:var(--muted);letter-spacing:.04em}
+
+/* ── CHART CARDS ── */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:2.5rem}
+.chart-header{padding:1.5rem 2rem 1rem}
+.chart-qnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--c3);letter-spacing:.15em;margin-bottom:.5rem}
+.chart-title{font-size:16px;font-weight:500;margin-bottom:.3rem}
+.chart-sub{font-size:13px;color:var(--muted)}
+.chart-body{padding:0 1rem 1.5rem}
+svg text{font-family:'Outfit',sans-serif}
+.axis line,.axis path{stroke:rgba(120,100,200,0.2)}
+.axis text{fill:var(--muted);font-size:11px}
+.legend{display:flex;gap:1.5rem;padding:.75rem 2rem;flex-wrap:wrap;border-top:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:.5rem;font-size:12px;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-sq{width:12px;height:10px;border-radius:2px;flex-shrink:0}
+.tooltip{position:fixed;background:rgba(20,18,35,0.96);border:1px solid rgba(120,100,200,0.3);border-radius:6px;padding:.5rem .85rem;font-size:12px;color:var(--text);pointer-events:none;opacity:0;transition:opacity .15s;z-index:999;max-width:200px;line-height:1.5}
+
+/* METHODS */
+.methods-row{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-bottom:4rem}
+.method-block h3{font-family:'DM Serif Display',serif;font-size:1.15rem;font-weight:400;margin-bottom:1rem;color:var(--c1)}
+.method-list{list-style:none}
+.method-list li{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:.7rem}
+.method-list li::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;background:var(--c2)}
+.tech-row{display:flex;flex-wrap:wrap;gap:.6rem}
+.tech-pill{font-family:'DM Mono',monospace;font-size:11px;padding:.4rem 1rem;border-radius:2rem;border:1px solid var(--border);background:var(--bg2);color:var(--muted);transition:all .2s;cursor:default}
+.tech-pill:hover{border-color:var(--c1);color:var(--c1)}
+footer{border-top:1px solid var(--border);padding:2rem 3rem;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;color:var(--muted);font-size:13px}
+footer a{color:var(--c1);text-decoration:none}
+@media(max-width:700px){
+  nav{padding:1rem 1.5rem}.nav-links{display:none}
+  section{padding:3rem 1.5rem}.hero{padding:6rem 1.5rem 3rem}
+  .methods-row{grid-template-columns:1fr;gap:2rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">consumer_shopping_trends.R</div>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#charts">Charts</a></li>
+    <li><a href="#methods">Methods</a></li>
+    <li><a href="https://github.com/" target="_blank">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<div style="position:relative;overflow:hidden">
+<div class="hero" id="overview">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div>
+  <div class="hero-tag">R Programming · Data Analysis</div>
+  <h1>Consumer Shopping<br><em>Trends 2026</em></h1>
+  <p class="hero-desc">Exploratory data analysis of nearly 12,000 customers examining how digital habits, geography, income, and psychology shape modern purchasing behaviour.</p>
+  <div class="hero-meta">
+    <span class="badge">tidyverse</span><span class="badge">ggplot2</span><span class="badge">dplyr</span>
+    <span class="badge">11,789 observations</span><span class="badge">7 research questions</span>
+  </div>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="https://github.com/" target="_blank">↗ View on GitHub</a>
+    <a class="btn btn-outline" href="project.R" download>↓ Download project.R</a>
+  </div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<section>
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-num">11,789</div><div class="stat-label">Customer records</div></div>
+    <div class="stat-item"><div class="stat-num">25</div><div class="stat-label">Variables analysed</div></div>
+    <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Research questions</div></div>
+    <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Visualisation types</div></div>
+    <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">City tiers compared</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CHARTS -->
+<section id="charts">
+  <p class="section-label">Visualisations</p>
+  <h2 class="section-title">All 7 research questions</h2>
+  <p class="section-desc">Interactive reproductions of the original ggplot2 charts, built from the actual dataset. Hover over any element for details.</p>
+
+  <!-- Q1 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 01</div>
+      <div class="chart-title">Online Presence and Shopping Intensity</div>
+      <div class="chart-sub">Average spend vs daily internet hours — bubble size = orders/month, colour = social media hours · 10% sample</div>
+    </div>
+    <div class="chart-body"><div id="chart-q1"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Low social media hours</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Mid social media hours</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>High social media hours</div>
+      <div class="legend-item" style="margin-left:auto;font-size:11px">Bubble size = orders/month</div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 02</div>
+      <div class="chart-title">Age Distribution by Shopping Preference</div>
+      <div class="chart-sub">Width shows where most customers are concentrated · diamond = mean age</div>
+    </div>
+    <div class="chart-body"><div id="chart-q2"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Hybrid</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Online</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>Store</div>
+      <div class="legend-item" style="margin-left:auto;font-size:11px">◆ = mean age</div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 03</div>
+      <div class="chart-title">Tier 1 vs Tier 3: Difference in Average Scores</div>
+      <div class="chart-sub">Positive = Tier 1 higher · Negative = Tier 3 higher</div>
+    </div>
+    <div class="chart-body"><div id="chart-q3"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-sq" style="background:var(--c1)"></div>Tier 1 higher</div>
+      <div class="legend-item"><div class="legend-sq" style="background:var(--c3)"></div>Tier 3 higher</div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 04</div>
+      <div class="chart-title">Return Frequency by Income Level</div>
+      <div class="chart-sub">Each dot = one customer · coloured dot = group mean</div>
+    </div>
+    <div class="chart-body"><div id="chart-q4"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>High Income (≥100k)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Medium Income (30k–100k)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>Low Income (&lt;30k)</div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 05</div>
+      <div class="chart-title">Factors and Impulse Buying Correlation</div>
+      <div class="chart-sub">Correlation coefficient of three factors with impulse_buying_score</div>
+    </div>
+    <div class="chart-body"><div id="chart-q5"></div></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 06</div>
+      <div class="chart-title">Shopping Preference across 4 Quadrants: Tech Skills × Need to Touch</div>
+      <div class="chart-sub">Share of customers in each segment by shopping preference</div>
+    </div>
+    <div class="chart-body"><div id="chart-q6"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-sq" style="background:var(--c1)"></div>Hybrid</div>
+      <div class="legend-item"><div class="legend-sq" style="background:var(--c2)"></div>Online</div>
+      <div class="legend-item"><div class="legend-sq" style="background:var(--c3)"></div>Store</div>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-qnum">Q 07</div>
+      <div class="chart-title">Free Return Importance vs Return Frequency</div>
+      <div class="chart-sub">Ribbon = ±SE · dashed line = linear trend</div>
+    </div>
+    <div class="chart-body"><div id="chart-q7"></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- METHODS -->
+<section id="methods">
+  <p class="section-label">Methodology</p>
+  <h2 class="section-title">Tools & techniques</h2>
+  <p class="section-desc">Each question was explored with purpose-built visualisations using a consistent design system.</p>
+  <div class="methods-row">
+    <div class="method-block">
+      <h3>Data manipulation</h3>
+      <ul class="method-list">
+        <li>Grouped summaries with <code>group_by()</code> + <code>summarise()</code></li>
+        <li>Tidy reshaping via <code>pivot_longer()</code> / <code>pivot_wider()</code></li>
+        <li>Stratified sampling with <code>slice_sample()</code></li>
+        <li>Quadrant segmentation using <code>case_when()</code></li>
+        <li>Correlation analysis with <code>cor()</code></li>
+        <li>Weighted means via <code>weighted.mean()</code></li>
+      </ul>
+    </div>
+    <div class="method-block">
+      <h3>Visualisation techniques</h3>
+      <ul class="method-list">
+        <li>Multi-aesthetic bubble charts (size + fill + facets)</li>
+        <li>Violin + jitter plots with mean diamond overlay</li>
+        <li>Diverging bar charts with <code>coord_flip()</code></li>
+        <li>Lollipop charts with <code>scale_color_gradient2</code></li>
+        <li>100% stacked bar chart with percent labels</li>
+        <li>Confidence ribbon + linear trend line overlay</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tech-row">
+    <span class="tech-pill">R 4.x</span><span class="tech-pill">tidyverse</span><span class="tech-pill">ggplot2</span>
+    <span class="tech-pill">dplyr</span><span class="tech-pill">tidyr</span><span class="tech-pill">scales</span>
+    <span class="tech-pill">geom_violin</span><span class="tech-pill">geom_ribbon</span><span class="tech-pill">facet_wrap</span>
+    <span class="tech-pill">stat_summary</span><span class="tech-pill">pivot_longer</span><span class="tech-pill">cor()</span>
+    <span class="tech-pill">weighted.mean()</span><span class="tech-pill">slice_sample</span><span class="tech-pill">case_when</span>
+  </div>
+</section>
+
+<footer>
+  <span>Consumer Shopping Trends 2026 · R Data Analysis Course Project</span>
+  <a href="https://github.com/" target="_blank">github.com/your-username/consumer-shopping-r →</a>
+</footer>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = {"q1":[{"pref":"Store","internet":4.5,"spend":5173,"orders":28,"social":1.7},{"pref":"Online","internet":3.9,"spend":84535,"orders":38,"social":3.7},{"pref":"Store","internet":7.4,"spend":11251,"orders":11,"social":1.8},{"pref":"Store","internet":2.7,"spend":49235,"orders":7,"social":5.2},{"pref":"Store","internet":9.1,"spend":44404,"orders":11,"social":1.5},{"pref":"Store","internet":3.4,"spend":47494,"orders":29,"social":1.9},{"pref":"Store","internet":5.9,"spend":12924,"orders":33,"social":2.6},{"pref":"Store","internet":2.7,"spend":59616,"orders":36,"social":3.2},{"pref":"Store","internet":5.7,"spend":40662,"orders":12,"social":1.9},{"pref":"Store","internet":6.2,"spend":62050,"orders":32,"social":3.6},{"pref":"Store","internet":4.3,"spend":69194,"orders":6,"social":1.6},{"pref":"Store","internet":5.0,"spend":16335,"orders":47,"social":2.5},{"pref":"Store","internet":6.6,"spend":40085,"orders":22,"social":1.3},{"pref":"Store","internet":6.3,"spend":43930,"orders":37,"social":2.3},{"pref":"Store","internet":2.2,"spend":23475,"orders":42,"social":3.8},{"pref":"Store","internet":6.5,"spend":39760,"orders":17,"social":0.3},{"pref":"Store","internet":5.3,"spend":12948,"orders":39,"social":4.0},{"pref":"Store","internet":8.2,"spend":73000,"orders":16,"social":3.7},{"pref":"Store","internet":3.1,"spend":117482,"orders":13,"social":1.6},{"pref":"Store","internet":5.2,"spend":39622,"orders":42,"social":1.0},{"pref":"Store","internet":3.4,"spend":104849,"orders":2,"social":3.2},{"pref":"Store","internet":5.4,"spend":32093,"orders":17,"social":3.1},{"pref":"Store","internet":1.0,"spend":84221,"orders":5,"social":1.8},{"pref":"Store","internet":7.5,"spend":18593,"orders":42,"social":1.2},{"pref":"Online","internet":5.7,"spend":144336,"orders":5,"social":2.8},{"pref":"Store","internet":6.5,"spend":107854,"orders":49,"social":4.8},{"pref":"Store","internet":4.7,"spend":6552,"orders":24,"social":1.2},{"pref":"Store","internet":5.4,"spend":119307,"orders":18,"social":2.3},{"pref":"Store","internet":5.5,"spend":85446,"orders":5,"social":4.2},{"pref":"Store","internet":6.9,"spend":99623,"orders":39,"social":2.5},{"pref":"Online","internet":8.6,"spend":121215,"orders":39,"social":1.9},{"pref":"Store","internet":9.4,"spend":109760,"orders":11,"social":2.2},{"pref":"Store","internet":6.9,"spend":2891,"orders":46,"social":4.6},{"pref":"Store","internet":6.5,"spend":54793,"orders":14,"social":3.1},{"pref":"Online","internet":9.4,"spend":69746,"orders":37,"social":3.4},{"pref":"Store","internet":8.8,"spend":70297,"orders":46,"social":2.2},{"pref":"Store","internet":8.7,"spend":58214,"orders":48,"social":3.2},{"pref":"Store","internet":8.5,"spend":83539,"orders":7,"social":0.8},{"pref":"Store","internet":2.4,"spend":8006,"orders":47,"social":0.6},{"pref":"Store","internet":5.0,"spend":62219,"orders":14,"social":2.9},{"pref":"Store","internet":8.0,"spend":45799,"orders":45,"social":3.6},{"pref":"Store","internet":6.4,"spend":78695,"orders":2,"social":2.0},{"pref":"Store","internet":7.0,"spend":77916,"orders":23,"social":2.1},{"pref":"Store","internet":7.1,"spend":7014,"orders":45,"social":2.1},{"pref":"Store","internet":8.1,"spend":119287,"orders":0,"social":2.2},{"pref":"Store","internet":1.0,"spend":36502,"orders":10,"social":1.9},{"pref":"Store","internet":2.5,"spend":130107,"orders":35,"social":2.7},{"pref":"Store","internet":5.4,"spend":140127,"orders":37,"social":3.5},{"pref":"Hybrid","internet":6.3,"spend":93649,"orders":40,"social":2.1},{"pref":"Online","internet":7.8,"spend":10153,"orders":31,"social":1.2},{"pref":"Hybrid","internet":10.0,"spend":52470,"orders":24,"social":3.2},{"pref":"Store","internet":7.3,"spend":130050,"orders":6,"social":0.6},{"pref":"Store","internet":3.6,"spend":149513,"orders":10,"social":1.4},{"pref":"Store","internet":9.5,"spend":127092,"orders":28,"social":2.7},{"pref":"Store","internet":3.4,"spend":128514,"orders":20,"social":2.0},{"pref":"Hybrid","internet":8.6,"spend":70235,"orders":18,"social":1.8},{"pref":"Store","internet":6.6,"spend":104637,"orders":15,"social":0.0},{"pref":"Store","internet":6.9,"spend":3439,"orders":37,"social":2.2},{"pref":"Store","internet":5.3,"spend":40812,"orders":15,"social":3.5},{"pref":"Store","internet":8.0,"spend":54224,"orders":21,"social":3.8},{"pref":"Store","internet":3.1,"spend":23686,"orders":19,"social":2.2},{"pref":"Store","internet":6.2,"spend":126700,"orders":26,"social":2.9},{"pref":"Store","internet":4.9,"spend":92898,"orders":31,"social":2.9},{"pref":"Store","internet":5.4,"spend":29919,"orders":29,"social":2.7},{"pref":"Store","internet":1.7,"spend":123722,"orders":38,"social":2.9},{"pref":"Store","internet":8.2,"spend":63855,"orders":26,"social":4.1},{"pref":"Store","internet":7.4,"spend":65067,"orders":20,"social":2.4},{"pref":"Hybrid","internet":7.8,"spend":114314,"orders":39,"social":5.6},{"pref":"Store","internet":5.9,"spend":101636,"orders":35,"social":1.2},{"pref":"Store","internet":3.2,"spend":48008,"orders":13,"social":3.2},{"pref":"Online","internet":5.1,"spend":27828,"orders":15,"social":4.2},{"pref":"Online","internet":4.5,"spend":42524,"orders":6,"social":5.4},{"pref":"Store","internet":8.5,"spend":122845,"orders":3,"social":2.5},{"pref":"Store","internet":6.0,"spend":137777,"orders":34,"social":2.3},{"pref":"Store","internet":11.0,"spend":115862,"orders":26,"social":1.3},{"pref":"Store","internet":5.9,"spend":31116,"orders":14,"social":1.2},{"pref":"Store","internet":8.0,"spend":134265,"orders":1,"social":2.8},{"pref":"Store","internet":5.6,"spend":93563,"orders":28,"social":4.3},{"pref":"Store","internet":7.5,"spend":95632,"orders":35,"social":3.5},{"pref":"Store","internet":5.5,"spend":75010,"orders":7,"social":5.0},{"pref":"Store","internet":5.9,"spend":77700,"orders":5,"social":2.5},{"pref":"Hybrid","internet":8.8,"spend":21348,"orders":5,"social":3.3},{"pref":"Store","internet":7.0,"spend":52988,"orders":13,"social":1.3},{"pref":"Store","internet":2.9,"spend":51041,"orders":28,"social":2.8},{"pref":"Store","internet":4.8,"spend":62774,"orders":35,"social":4.8},{"pref":"Store","internet":7.3,"spend":123438,"orders":28,"social":1.1},{"pref":"Store","internet":3.5,"spend":136089,"orders":7,"social":3.3},{"pref":"Hybrid","internet":9.1,"spend":149376,"orders":47,"social":2.8},{"pref":"Store","internet":5.6,"spend":117370,"orders":9,"social":3.7},{"pref":"Store","internet":5.1,"spend":115458,"orders":43,"social":4.4},{"pref":"Store","internet":7.1,"spend":16544,"orders":13,"social":2.4},{"pref":"Store","internet":6.3,"spend":145741,"orders":41,"social":1.7},{"pref":"Store","internet":7.7,"spend":1919,"orders":41,"social":3.1},{"pref":"Store","internet":5.4,"spend":872,"orders":29,"social":2.3},{"pref":"Hybrid","internet":5.7,"spend":64410,"orders":45,"social":3.9},{"pref":"Store","internet":3.6,"spend":7985,"orders":49,"social":1.2},{"pref":"Online","internet":3.5,"spend":119906,"orders":42,"social":3.8},{"pref":"Store","internet":6.3,"spend":140679,"orders":0,"social":2.4},{"pref":"Store","internet":8.8,"spend":31974,"orders":41,"social":2.8},{"pref":"Store","internet":8.2,"spend":77880,"orders":32,"social":2.7},{"pref":"Store","internet":3.8,"spend":132114,"orders":35,"social":4.4},{"pref":"Store","internet":1.0,"spend":28120,"orders":43,"social":1.0},{"pref":"Store","internet":4.9,"spend":77925,"orders":36,"social":1.4},{"pref":"Hybrid","internet":3.3,"spend":20514,"orders":42,"social":2.0},{"pref":"Store","internet":8.4,"spend":83749,"orders":24,"social":4.6},{"pref":"Store","internet":6.6,"spend":33280,"orders":2,"social":4.1},{"pref":"Store","internet":8.0,"spend":128235,"orders":25,"social":3.1},{"pref":"Online","internet":6.4,"spend":94713,"orders":34,"social":2.1},{"pref":"Store","internet":10.1,"spend":60307,"orders":21,"social":2.3},{"pref":"Store","internet":7.2,"spend":122474,"orders":12,"social":2.0},{"pref":"Store","internet":9.6,"spend":51842,"orders":16,"social":3.4},{"pref":"Store","internet":7.8,"spend":107726,"orders":17,"social":2.0},{"pref":"Store","internet":6.8,"spend":60857,"orders":47,"social":4.0},{"pref":"Store","internet":8.1,"spend":88370,"orders":29,"social":2.5},{"pref":"Store","internet":8.1,"spend":77178,"orders":15,"social":3.8},{"pref":"Store","internet":8.5,"spend":144135,"orders":37,"social":3.5},{"pref":"Store","internet":6.7,"spend":117511,"orders":9,"social":2.6},{"pref":"Online","internet":4.3,"spend":63123,"orders":33,"social":1.6},{"pref":"Store","internet":4.5,"spend":671,"orders":2,"social":2.6},{"pref":"Store","internet":4.0,"spend":119175,"orders":22,"social":3.8},{"pref":"Store","internet":5.0,"spend":60072,"orders":48,"social":1.7},{"pref":"Store","internet":6.2,"spend":40514,"orders":6,"social":3.2},{"pref":"Store","internet":3.3,"spend":84122,"orders":25,"social":5.6},{"pref":"Store","internet":7.2,"spend":20205,"orders":31,"social":1.5},{"pref":"Store","internet":6.2,"spend":95553,"orders":33,"social":2.3},{"pref":"Store","internet":1.0,"spend":54722,"orders":25,"social":2.0},{"pref":"Store","internet":8.1,"spend":144617,"orders":2,"social":4.0},{"pref":"Store","internet":5.1,"spend":90636,"orders":3,"social":3.0},{"pref":"Store","internet":4.9,"spend":36579,"orders":4,"social":2.8},{"pref":"Store","internet":5.2,"spend":64368,"orders":13,"social":2.6},{"pref":"Store","internet":5.6,"spend":144815,"orders":7,"social":2.6},{"pref":"Store","internet":5.6,"spend":114036,"orders":42,"social":1.6},{"pref":"Store","internet":5.5,"spend":145691,"orders":7,"social":3.0},{"pref":"Store","internet":7.5,"spend":7869,"orders":8,"social":1.4},{"pref":"Hybrid","internet":7.6,"spend":47551,"orders":0,"social":2.7},{"pref":"Store","internet":4.4,"spend":17403,"orders":36,"social":2.8},{"pref":"Store","internet":5.3,"spend":60946,"orders":44,"social":0.2},{"pref":"Store","internet":6.5,"spend":63617,"orders":49,"social":2.8},{"pref":"Store","internet":9.3,"spend":34714,"orders":37,"social":3.3},{"pref":"Store","internet":2.0,"spend":1968,"orders":31,"social":3.4},{"pref":"Store","internet":6.8,"spend":45993,"orders":34,"social":2.6},{"pref":"Store","internet":3.7,"spend":43475,"orders":26,"social":3.5},{"pref":"Store","internet":1.4,"spend":129563,"orders":13,"social":2.9},{"pref":"Store","internet":7.3,"spend":47084,"orders":40,"social":4.2},{"pref":"Store","internet":7.6,"spend":112055,"orders":47,"social":3.2},{"pref":"Store","internet":8.8,"spend":42469,"orders":22,"social":2.2},{"pref":"Store","internet":7.7,"spend":102626,"orders":10,"social":3.2},{"pref":"Store","internet":5.5,"spend":72504,"orders":11,"social":1.6},{"pref":"Store","internet":6.8,"spend":139693,"orders":33,"social":2.3},{"pref":"Store","internet":5.2,"spend":37856,"orders":14,"social":4.5},{"pref":"Store","internet":7.6,"spend":107607,"orders":32,"social":2.4},{"pref":"Store","internet":7.0,"spend":8390,"orders":16,"social":1.5},{"pref":"Store","internet":4.4,"spend":31891,"orders":10,"social":0.7},{"pref":"Store","internet":5.8,"spend":18341,"orders":28,"social":2.7},{"pref":"Store","internet":5.8,"spend":101915,"orders":35,"social":2.0},{"pref":"Store","internet":6.7,"spend":61682,"orders":49,"social":0.8},{"pref":"Store","internet":2.2,"spend":11744,"orders":19,"social":2.0},{"pref":"Store","internet":4.8,"spend":92519,"orders":32,"social":3.8},{"pref":"Online","internet":9.9,"spend":73513,"orders":38,"social":2.0},{"pref":"Store","internet":4.9,"spend":149446,"orders":39,"social":2.7},{"pref":"Store","internet":6.4,"spend":114340,"orders":28,"social":1.6},{"pref":"Store","internet":8.1,"spend":95584,"orders":40,"social":3.4},{"pref":"Store","internet":4.3,"spend":36018,"orders":36,"social":2.7},{"pref":"Store","internet":3.5,"spend":106448,"orders":30,"social":3.5},{"pref":"Store","internet":5.2,"spend":48215,"orders":44,"social":1.3},{"pref":"Store","internet":6.7,"spend":129188,"orders":6,"social":1.0},{"pref":"Store","internet":9.8,"spend":143709,"orders":14,"social":4.4},{"pref":"Store","internet":6.2,"spend":147838,"orders":49,"social":1.5},{"pref":"Store","internet":2.8,"spend":68154,"orders":3,"social":0.5},{"pref":"Store","internet":8.4,"spend":12147,"orders":44,"social":1.5},{"pref":"Store","internet":7.7,"spend":62783,"orders":37,"social":1.7},{"pref":"Online","internet":6.1,"spend":88572,"orders":0,"social":2.2},{"pref":"Store","internet":4.5,"spend":87632,"orders":15,"social":1.6},{"pref":"Store","internet":4.4,"spend":10091,"orders":39,"social":1.6},{"pref":"Online","internet":7.6,"spend":95759,"orders":5,"social":3.6},{"pref":"Store","internet":3.7,"spend":4236,"orders":13,"social":2.7},{"pref":"Store","internet":8.1,"spend":72390,"orders":39,"social":1.7},{"pref":"Store","internet":6.4,"spend":94374,"orders":6,"social":0.5},{"pref":"Store","internet":5.6,"spend":67634,"orders":46,"social":2.5},{"pref":"Store","internet":8.4,"spend":113658,"orders":1,"social":4.4},{"pref":"Store","internet":4.1,"spend":81060,"orders":21,"social":2.8},{"pref":"Store","internet":7.4,"spend":147483,"orders":11,"social":2.1},{"pref":"Store","internet":5.8,"spend":70410,"orders":36,"social":3.7},{"pref":"Store","internet":5.8,"spend":88010,"orders":18,"social":2.0},{"pref":"Store","internet":2.9,"spend":29507,"orders":18,"social":2.1},{"pref":"Store","internet":6.4,"spend":147322,"orders":46,"social":2.9},{"pref":"Store","internet":4.2,"spend":145526,"orders":0,"social":2.3},{"pref":"Store","internet":7.6,"spend":104548,"orders":1,"social":3.7},{"pref":"Store","internet":6.4,"spend":79528,"orders":47,"social":0.3},{"pref":"Store","internet":7.5,"spend":73127,"orders":1,"social":0.8},{"pref":"Store","internet":4.6,"spend":58390,"orders":6,"social":2.4},{"pref":"Store","internet":4.1,"spend":16502,"orders":13,"social":3.2},{"pref":"Online","internet":6.5,"spend":37636,"orders":45,"social":2.6},{"pref":"Store","internet":8.7,"spend":68597,"orders":29,"social":1.7},{"pref":"Store","internet":5.1,"spend":16469,"orders":31,"social":2.8},{"pref":"Store","internet":8.4,"spend":74441,"orders":43,"social":3.1},{"pref":"Store","internet":10.2,"spend":129199,"orders":5,"social":1.7},{"pref":"Online","internet":5.7,"spend":13913,"orders":43,"social":2.3},{"pref":"Online","internet":8.4,"spend":66421,"orders":37,"social":3.5},{"pref":"Store","internet":10.9,"spend":110101,"orders":42,"social":2.4},{"pref":"Store","internet":5.1,"spend":66106,"orders":15,"social":2.2},{"pref":"Store","internet":4.1,"spend":121178,"orders":2,"social":5.2},{"pref":"Store","internet":4.3,"spend":117295,"orders":6,"social":4.4},{"pref":"Store","internet":5.1,"spend":29217,"orders":27,"social":2.9},{"pref":"Store","internet":7.6,"spend":119158,"orders":37,"social":4.8},{"pref":"Online","internet":7.7,"spend":63330,"orders":15,"social":2.8},{"pref":"Store","internet":8.5,"spend":39804,"orders":5,"social":3.4},{"pref":"Store","internet":5.8,"spend":53890,"orders":1,"social":0.9},{"pref":"Store","internet":3.7,"spend":31941,"orders":22,"social":5.0},{"pref":"Store","internet":8.1,"spend":1348,"orders":14,"social":2.1},{"pref":"Store","internet":6.2,"spend":54394,"orders":47,"social":3.6},{"pref":"Store","internet":5.8,"spend":110659,"orders":14,"social":2.1},{"pref":"Store","internet":3.5,"spend":131010,"orders":16,"social":3.2},{"pref":"Store","internet":3.7,"spend":117803,"orders":30,"social":3.4},{"pref":"Store","internet":2.3,"spend":129974,"orders":13,"social":1.4},{"pref":"Store","internet":7.8,"spend":24542,"orders":49,"social":1.6},{"pref":"Store","internet":8.1,"spend":111955,"orders":17,"social":3.3},{"pref":"Store","internet":6.3,"spend":48337,"orders":47,"social":3.1},{"pref":"Store","internet":3.1,"spend":106769,"orders":34,"social":0.4},{"pref":"Store","internet":7.7,"spend":46195,"orders":11,"social":2.8},{"pref":"Hybrid","internet":7.1,"spend":42881,"orders":27,"social":3.6},{"pref":"Store","internet":5.6,"spend":69887,"orders":18,"social":1.6},{"pref":"Store","internet":8.6,"spend":102779,"orders":20,"social":5.3},{"pref":"Store","internet":7.7,"spend":136304,"orders":49,"social":3.2},{"pref":"Store","internet":4.1,"spend":19336,"orders":6,"social":3.1},{"pref":"Store","internet":5.4,"spend":41111,"orders":40,"social":2.7},{"pref":"Store","internet":6.2,"spend":29721,"orders":7,"social":4.3},{"pref":"Store","internet":5.8,"spend":3029,"orders":19,"social":1.4},{"pref":"Online","internet":4.8,"spend":97090,"orders":42,"social":3.1},{"pref":"Store","internet":6.1,"spend":122170,"orders":21,"social":4.9},{"pref":"Store","internet":1.5,"spend":56153,"orders":41,"social":3.2},{"pref":"Store","internet":9.8,"spend":17743,"orders":17,"social":2.5},{"pref":"Store","internet":6.8,"spend":8493,"orders":36,"social":2.5},{"pref":"Store","internet":5.7,"spend":103200,"orders":9,"social":2.5},{"pref":"Store","internet":6.6,"spend":127280,"orders":8,"social":2.1},{"pref":"Store","internet":4.7,"spend":25797,"orders":29,"social":5.3},{"pref":"Store","internet":6.4,"spend":88761,"orders":30,"social":3.0},{"pref":"Store","internet":5.3,"spend":125438,"orders":2,"social":0.0},{"pref":"Store","internet":6.3,"spend":140776,"orders":4,"social":1.0},{"pref":"Store","internet":5.6,"spend":17031,"orders":47,"social":3.6},{"pref":"Store","internet":4.6,"spend":81647,"orders":44,"social":2.6},{"pref":"Online","internet":7.9,"spend":144649,"orders":39,"social":2.1},{"pref":"Store","internet":5.4,"spend":45505,"orders":2,"social":4.8},{"pref":"Store","internet":7.9,"spend":129590,"orders":20,"social":0.7},{"pref":"Store","internet":5.6,"spend":82660,"orders":5,"social":1.0},{"pref":"Store","internet":5.9,"spend":18389,"orders":48,"social":1.9},{"pref":"Online","internet":8.1,"spend":61771,"orders":23,"social":0.9},{"pref":"Store","internet":4.1,"spend":14613,"orders":16,"social":2.5},{"pref":"Store","internet":4.5,"spend":68583,"orders":5,"social":3.0},{"pref":"Store","internet":5.1,"spend":132569,"orders":44,"social":2.4},{"pref":"Hybrid","internet":8.0,"spend":100112,"orders":13,"social":3.9},{"pref":"Store","internet":5.6,"spend":86952,"orders":13,"social":2.8},{"pref":"Store","internet":5.0,"spend":31322,"orders":22,"social":3.0},{"pref":"Store","internet":3.8,"spend":75085,"orders":35,"social":3.7},{"pref":"Store","internet":5.3,"spend":145006,"orders":2,"social":4.5},{"pref":"Store","internet":4.6,"spend":103653,"orders":38,"social":5.3},{"pref":"Store","internet":9.9,"spend":126185,"orders":39,"social":3.7},{"pref":"Store","internet":4.7,"spend":83274,"orders":28,"social":3.2},{"pref":"Store","internet":2.9,"spend":50378,"orders":12,"social":3.1},{"pref":"Store","internet":2.0,"spend":100096,"orders":15,"social":2.5},{"pref":"Store","internet":2.7,"spend":25408,"orders":47,"social":4.0},{"pref":"Online","internet":9.4,"spend":142381,"orders":49,"social":0.2},{"pref":"Store","internet":5.1,"spend":61207,"orders":25,"social":0.8},{"pref":"Store","internet":4.8,"spend":14152,"orders":10,"social":1.0},{"pref":"Store","internet":7.3,"spend":71554,"orders":10,"social":3.9},{"pref":"Store","internet":5.4,"spend":52138,"orders":0,"social":1.9},{"pref":"Store","internet":2.4,"spend":70207,"orders":34,"social":2.3},{"pref":"Store","internet":3.9,"spend":40351,"orders":46,"social":2.2},{"pref":"Store","internet":4.8,"spend":64136,"orders":32,"social":3.2},{"pref":"Store","internet":5.8,"spend":99551,"orders":13,"social":1.0},{"pref":"Store","internet":6.9,"spend":32615,"orders":9,"social":3.3},{"pref":"Store","internet":6.0,"spend":6044,"orders":10,"social":1.9},{"pref":"Store","internet":2.2,"spend":27633,"orders":36,"social":2.4},{"pref":"Online","internet":7.9,"spend":95427,"orders":30,"social":2.7},{"pref":"Store","internet":8.2,"spend":101507,"orders":13,"social":1.6},{"pref":"Store","internet":7.2,"spend":102138,"orders":49,"social":3.9},{"pref":"Store","internet":6.6,"spend":77973,"orders":17,"social":2.2},{"pref":"Hybrid","internet":4.4,"spend":46763,"orders":39,"social":0.6},{"pref":"Store","internet":7.0,"spend":82624,"orders":20,"social":1.4},{"pref":"Store","internet":3.4,"spend":83624,"orders":14,"social":3.1},{"pref":"Store","internet":8.0,"spend":7285,"orders":24,"social":0.6},{"pref":"Online","internet":6.1,"spend":79024,"orders":28,"social":3.4},{"pref":"Store","internet":3.2,"spend":28833,"orders":16,"social":3.5},{"pref":"Hybrid","internet":3.6,"spend":41448,"orders":28,"social":4.1},{"pref":"Store","internet":6.2,"spend":46759,"orders":37,"social":4.3},{"pref":"Store","internet":4.9,"spend":108462,"orders":0,"social":1.7},{"pref":"Store","internet":7.2,"spend":90288,"orders":12,"social":3.8},{"pref":"Store","internet":6.7,"spend":98211,"orders":3,"social":1.9},{"pref":"Store","internet":6.9,"spend":75507,"orders":6,"social":0.0},{"pref":"Hybrid","internet":6.5,"spend":38829,"orders":36,"social":3.8},{"pref":"Online","internet":5.3,"spend":106004,"orders":30,"social":2.9},{"pref":"Store","internet":4.4,"spend":79491,"orders":22,"social":3.0},{"pref":"Store","internet":6.3,"spend":50764,"orders":33,"social":1.9},{"pref":"Online","internet":7.5,"spend":107228,"orders":18,"social":4.6},{"pref":"Store","internet":7.3,"spend":30752,"orders":48,"social":3.1},{"pref":"Store","internet":4.6,"spend":104885,"orders":14,"social":2.3},{"pref":"Store","internet":6.7,"spend":111542,"orders":22,"social":1.4},{"pref":"Store","internet":7.3,"spend":111521,"orders":32,"social":2.6},{"pref":"Store","internet":5.9,"spend":10561,"orders":10,"social":5.4},{"pref":"Store","internet":5.5,"spend":58721,"orders":40,"social":2.1},{"pref":"Store","internet":1.8,"spend":122061,"orders":35,"social":4.3},{"pref":"Online","internet":6.3,"spend":102642,"orders":37,"social":3.1},{"pref":"Store","internet":6.7,"spend":46201,"orders":10,"social":4.0},{"pref":"Store","internet":2.0,"spend":65481,"orders":44,"social":0.0},{"pref":"Store","internet":8.3,"spend":36641,"orders":13,"social":3.2},{"pref":"Store","internet":5.4,"spend":34444,"orders":33,"social":1.9},{"pref":"Store","internet":4.8,"spend":142055,"orders":22,"social":4.9},{"pref":"Store","internet":4.0,"spend":27981,"orders":31,"social":1.8},{"pref":"Store","internet":4.9,"spend":46168,"orders":35,"social":3.5},{"pref":"Store","internet":5.3,"spend":120120,"orders":12,"social":1.0},{"pref":"Online","internet":7.1,"spend":84773,"orders":10,"social":0.4},{"pref":"Store","internet":6.8,"spend":92724,"orders":13,"social":1.9},{"pref":"Store","internet":6.8,"spend":111630,"orders":31,"social":3.5},{"pref":"Hybrid","internet":2.3,"spend":144490,"orders":30,"social":3.7},{"pref":"Store","internet":4.5,"spend":19269,"orders":44,"social":1.1},{"pref":"Store","internet":6.4,"spend":102379,"orders":3,"social":2.9},{"pref":"Store","internet":6.6,"spend":121223,"orders":47,"social":0.6},{"pref":"Store","internet":4.8,"spend":102595,"orders":20,"social":4.2},{"pref":"Store","internet":7.2,"spend":121695,"orders":11,"social":1.4},{"pref":"Store","internet":6.2,"spend":22424,"orders":49,"social":2.3},{"pref":"Store","internet":6.6,"spend":8124,"orders":23,"social":2.9},{"pref":"Online","internet":5.9,"spend":144161,"orders":38,"social":0.5},{"pref":"Store","internet":6.5,"spend":72062,"orders":32,"social":2.6},{"pref":"Store","internet":10.6,"spend":76573,"orders":30,"social":5.1},{"pref":"Store","internet":5.9,"spend":62853,"orders":10,"social":3.7},{"pref":"Store","internet":9.5,"spend":8679,"orders":22,"social":1.4},{"pref":"Store","internet":6.8,"spend":94016,"orders":44,"social":1.3},{"pref":"Store","internet":6.7,"spend":137416,"orders":17,"social":1.7},{"pref":"Store","internet":4.6,"spend":73192,"orders":11,"social":1.8},{"pref":"Store","internet":9.8,"spend":85944,"orders":27,"social":2.5},{"pref":"Store","internet":7.3,"spend":144562,"orders":20,"social":2.2},{"pref":"Store","internet":6.8,"spend":4314,"orders":15,"social":3.1},{"pref":"Store","internet":4.6,"spend":64583,"orders":49,"social":2.0},{"pref":"Store","internet":5.8,"spend":24585,"orders":36,"social":0.5},{"pref":"Store","internet":5.5,"spend":81061,"orders":41,"social":4.7},{"pref":"Store","internet":5.1,"spend":75119,"orders":48,"social":3.4},{"pref":"Store","internet":3.2,"spend":26687,"orders":41,"social":3.4},{"pref":"Store","internet":6.6,"spend":121034,"orders":7,"social":1.8},{"pref":"Store","internet":6.5,"spend":8836,"orders":32,"social":3.4},{"pref":"Online","internet":5.5,"spend":92947,"orders":31,"social":2.0},{"pref":"Store","internet":6.6,"spend":80743,"orders":20,"social":1.5},{"pref":"Online","internet":6.0,"spend":116227,"orders":0,"social":2.3},{"pref":"Store","internet":4.5,"spend":31524,"orders":11,"social":2.5},{"pref":"Store","internet":5.3,"spend":13449,"orders":25,"social":2.1},{"pref":"Online","internet":9.6,"spend":83941,"orders":8,"social":2.5},{"pref":"Store","internet":9.6,"spend":41513,"orders":49,"social":3.7},{"pref":"Store","internet":4.4,"spend":98112,"orders":10,"social":4.7},{"pref":"Store","internet":6.4,"spend":51477,"orders":18,"social":4.4},{"pref":"Store","internet":6.5,"spend":17342,"orders":4,"social":3.6},{"pref":"Store","internet":4.0,"spend":14457,"orders":10,"social":2.2},{"pref":"Store","internet":2.6,"spend":74554,"orders":26,"social":3.1},{"pref":"Store","internet":5.6,"spend":25639,"orders":47,"social":3.9},{"pref":"Store","internet":6.9,"spend":43935,"orders":15,"social":3.3},{"pref":"Online","internet":4.2,"spend":133228,"orders":4,"social":5.7},{"pref":"Store","internet":5.8,"spend":30565,"orders":45,"social":2.8},{"pref":"Store","internet":6.5,"spend":8159,"orders":37,"social":1.9},{"pref":"Online","internet":4.0,"spend":54568,"orders":32,"social":3.0},{"pref":"Store","internet":6.8,"spend":8076,"orders":7,"social":1.8},{"pref":"Store","internet":8.0,"spend":90731,"orders":8,"social":3.8},{"pref":"Store","internet":10.3,"spend":133978,"orders":49,"social":4.4},{"pref":"Store","internet":8.5,"spend":42091,"orders":21,"social":3.1},{"pref":"Store","internet":6.3,"spend":83955,"orders":49,"social":5.1},{"pref":"Store","internet":8.9,"spend":3806,"orders":0,"social":5.1},{"pref":"Store","internet":4.8,"spend":33711,"orders":24,"social":1.9},{"pref":"Store","internet":6.0,"spend":10899,"orders":39,"social":3.5},{"pref":"Store","internet":3.1,"spend":20916,"orders":27,"social":2.1},{"pref":"Online","internet":3.9,"spend":101341,"orders":48,"social":0.1},{"pref":"Store","internet":3.5,"spend":97794,"orders":21,"social":3.2},{"pref":"Store","internet":5.1,"spend":56153,"orders":34,"social":3.4},{"pref":"Store","internet":2.4,"spend":89924,"orders":45,"social":4.3},{"pref":"Store","internet":6.3,"spend":144677,"orders":10,"social":1.5},{"pref":"Store","internet":4.4,"spend":42438,"orders":44,"social":3.6},{"pref":"Store","internet":8.6,"spend":87675,"orders":5,"social":0.0},{"pref":"Store","internet":4.6,"spend":145467,"orders":13,"social":0.5},{"pref":"Store","internet":7.3,"spend":26657,"orders":49,"social":2.2},{"pref":"Store","internet":6.3,"spend":101111,"orders":20,"social":1.3},{"pref":"Store","internet":7.8,"spend":9112,"orders":38,"social":1.7},{"pref":"Store","internet":12.0,"spend":103661,"orders":9,"social":3.3},{"pref":"Store","internet":7.4,"spend":142005,"orders":45,"social":0.0},{"pref":"Store","internet":5.3,"spend":130466,"orders":2,"social":1.6},{"pref":"Store","internet":2.7,"spend":55844,"orders":33,"social":3.3},{"pref":"Store","internet":5.2,"spend":87748,"orders":45,"social":1.6},{"pref":"Store","internet":9.6,"spend":111494,"orders":38,"social":3.6},{"pref":"Store","internet":5.7,"spend":53032,"orders":10,"social":3.3},{"pref":"Store","internet":4.7,"spend":37559,"orders":45,"social":2.0},{"pref":"Store","internet":7.3,"spend":133046,"orders":0,"social":4.0},{"pref":"Store","internet":8.6,"spend":53559,"orders":35,"social":1.9},{"pref":"Store","internet":9.0,"spend":50625,"orders":14,"social":2.0},{"pref":"Store","internet":7.1,"spend":62497,"orders":15,"social":0.0},{"pref":"Store","internet":2.6,"spend":104293,"orders":17,"social":1.3},{"pref":"Store","internet":9.8,"spend":34538,"orders":47,"social":1.9},{"pref":"Store","internet":6.0,"spend":138603,"orders":13,"social":2.2},{"pref":"Store","internet":7.0,"spend":121199,"orders":44,"social":3.9},{"pref":"Online","internet":6.8,"spend":10194,"orders":47,"social":3.9},{"pref":"Store","internet":3.4,"spend":9179,"orders":16,"social":2.5},{"pref":"Store","internet":5.4,"spend":119164,"orders":15,"social":2.2},{"pref":"Store","internet":6.1,"spend":94056,"orders":46,"social":2.7},{"pref":"Store","internet":6.2,"spend":33753,"orders":36,"social":2.2},{"pref":"Store","internet":4.7,"spend":19687,"orders":4,"social":2.6},{"pref":"Online","internet":3.9,"spend":94349,"orders":24,"social":3.5}],"q2":[{"pref":"Store","age":30},{"pref":"Store","age":58},{"pref":"Store","age":69},{"pref":"Store","age":39},{"pref":"Store","age":79},{"pref":"Store","age":27},{"pref":"Store","age":34},{"pref":"Store","age":45},{"pref":"Store","age":34},{"pref":"Store","age":21},{"pref":"Store","age":27},{"pref":"Store","age":35},{"pref":"Store","age":35},{"pref":"Store","age":35},{"pref":"Store","age":57},{"pref":"Store","age":46},{"pref":"Store","age":73},{"pref":"Store","age":65},{"pref":"Store","age":31},{"pref":"Store","age":25},{"pref":"Store","age":76},{"pref":"Store","age":40},{"pref":"Store","age":23},{"pref":"Store","age":71},{"pref":"Store","age":71},{"pref":"Store","age":33},{"pref":"Store","age":18},{"pref":"Store","age":47},{"pref":"Store","age":21},{"pref":"Store","age":73},{"pref":"Store","age":78},{"pref":"Store","age":26},{"pref":"Store","age":60},{"pref":"Store","age":45},{"pref":"Store","age":29},{"pref":"Store","age":31},{"pref":"Store","age":47},{"pref":"Store","age":21},{"pref":"Store","age":44},{"pref":"Store","age":53},{"pref":"Store","age":43},{"pref":"Store","age":64},{"pref":"Store","age":65},{"pref":"Store","age":69},{"pref":"Store","age":52},{"pref":"Store","age":54},{"pref":"Store","age":19},{"pref":"Store","age":21},{"pref":"Store","age":24},{"pref":"Store","age":69},{"pref":"Store","age":75},{"pref":"Store","age":29},{"pref":"Store","age":56},{"pref":"Store","age":57},{"pref":"Store","age":50},{"pref":"Store","age":53},{"pref":"Store","age":20},{"pref":"Store","age":24},{"pref":"Store","age":70},{"pref":"Store","age":77},{"pref":"Store","age":57},{"pref":"Store","age":40},{"pref":"Store","age":69},{"pref":"Store","age":50},{"pref":"Store","age":40},{"pref":"Store","age":19},{"pref":"Store","age":64},{"pref":"Store","age":31},{"pref":"Store","age":67},{"pref":"Store","age":27},{"pref":"Store","age":18},{"pref":"Store","age":45},{"pref":"Store","age":70},{"pref":"Store","age":70},{"pref":"Store","age":65},{"pref":"Store","age":46},{"pref":"Store","age":51},{"pref":"Store","age":42},{"pref":"Store","age":42},{"pref":"Store","age":32},{"pref":"Store","age":22},{"pref":"Store","age":48},{"pref":"Store","age":76},{"pref":"Store","age":46},{"pref":"Store","age":24},{"pref":"Store","age":39},{"pref":"Store","age":25},{"pref":"Store","age":34},{"pref":"Store","age":39},{"pref":"Store","age":75},{"pref":"Store","age":61},{"pref":"Store","age":62},{"pref":"Store","age":27},{"pref":"Store","age":19},{"pref":"Store","age":50},{"pref":"Store","age":73},{"pref":"Store","age":76},{"pref":"Store","age":59},{"pref":"Store","age":36},{"pref":"Store","age":25},{"pref":"Store","age":26},{"pref":"Store","age":43},{"pref":"Store","age":65},{"pref":"Store","age":44},{"pref":"Store","age":79},{"pref":"Store","age":63},{"pref":"Store","age":44},{"pref":"Store","age":79},{"pref":"Store","age":61},{"pref":"Store","age":56},{"pref":"Store","age":37},{"pref":"Store","age":53},{"pref":"Store","age":36},{"pref":"Store","age":50},{"pref":"Store","age":39},{"pref":"Store","age":57},{"pref":"Store","age":65},{"pref":"Store","age":62},{"pref":"Store","age":42},{"pref":"Store","age":78},{"pref":"Store","age":46},{"pref":"Store","age":48},{"pref":"Store","age":62},{"pref":"Store","age":44},{"pref":"Store","age":45},{"pref":"Store","age":54},{"pref":"Store","age":22},{"pref":"Store","age":26},{"pref":"Store","age":47},{"pref":"Store","age":59},{"pref":"Store","age":74},{"pref":"Store","age":25},{"pref":"Store","age":28},{"pref":"Store","age":45},{"pref":"Store","age":43},{"pref":"Store","age":39},{"pref":"Store","age":26},{"pref":"Store","age":70},{"pref":"Store","age":41},{"pref":"Store","age":24},{"pref":"Store","age":54},{"pref":"Store","age":42},{"pref":"Store","age":19},{"pref":"Store","age":19},{"pref":"Store","age":31},{"pref":"Store","age":78},{"pref":"Store","age":68},{"pref":"Store","age":25},{"pref":"Store","age":49},{"pref":"Store","age":63},{"pref":"Store","age":49},{"pref":"Store","age":48},{"pref":"Store","age":22},{"pref":"Store","age":42},{"pref":"Store","age":52},{"pref":"Store","age":62},{"pref":"Store","age":55},{"pref":"Store","age":31},{"pref":"Store","age":37},{"pref":"Store","age":23},{"pref":"Store","age":23},{"pref":"Store","age":68},{"pref":"Store","age":34},{"pref":"Store","age":66},{"pref":"Store","age":62},{"pref":"Store","age":71},{"pref":"Store","age":43},{"pref":"Store","age":35},{"pref":"Store","age":61},{"pref":"Store","age":62},{"pref":"Store","age":49},{"pref":"Store","age":42},{"pref":"Store","age":49},{"pref":"Store","age":28},{"pref":"Store","age":47},{"pref":"Store","age":37},{"pref":"Store","age":49},{"pref":"Store","age":74},{"pref":"Store","age":29},{"pref":"Store","age":20},{"pref":"Store","age":61},{"pref":"Store","age":21},{"pref":"Store","age":67},{"pref":"Store","age":26},{"pref":"Store","age":65},{"pref":"Store","age":64},{"pref":"Store","age":64},{"pref":"Store","age":27},{"pref":"Store","age":55},{"pref":"Store","age":73},{"pref":"Store","age":79},{"pref":"Store","age":45},{"pref":"Store","age":41},{"pref":"Store","age":18},{"pref":"Store","age":33},{"pref":"Store","age":54},{"pref":"Store","age":30},{"pref":"Store","age":76},{"pref":"Store","age":33},{"pref":"Store","age":56},{"pref":"Hybrid","age":68},{"pref":"Hybrid","age":39},{"pref":"Hybrid","age":67},{"pref":"Hybrid","age":69},{"pref":"Hybrid","age":49},{"pref":"Hybrid","age":57},{"pref":"Hybrid","age":38},{"pref":"Hybrid","age":27},{"pref":"Hybrid","age":63},{"pref":"Hybrid","age":78},{"pref":"Hybrid","age":28},{"pref":"Hybrid","age":26},{"pref":"Hybrid","age":28},{"pref":"Hybrid","age":72},{"pref":"Hybrid","age":31},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":70},{"pref":"Hybrid","age":47},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":27},{"pref":"Hybrid","age":29},{"pref":"Hybrid","age":60},{"pref":"Hybrid","age":52},{"pref":"Hybrid","age":23},{"pref":"Hybrid","age":23},{"pref":"Hybrid","age":63},{"pref":"Hybrid","age":39},{"pref":"Hybrid","age":51},{"pref":"Hybrid","age":26},{"pref":"Hybrid","age":72},{"pref":"Hybrid","age":75},{"pref":"Hybrid","age":60},{"pref":"Hybrid","age":22},{"pref":"Hybrid","age":50},{"pref":"Hybrid","age":58},{"pref":"Hybrid","age":43},{"pref":"Hybrid","age":76},{"pref":"Hybrid","age":66},{"pref":"Hybrid","age":28},{"pref":"Hybrid","age":29},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":28},{"pref":"Hybrid","age":66},{"pref":"Hybrid","age":37},{"pref":"Hybrid","age":31},{"pref":"Hybrid","age":71},{"pref":"Hybrid","age":73},{"pref":"Hybrid","age":18},{"pref":"Hybrid","age":50},{"pref":"Hybrid","age":51},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":32},{"pref":"Hybrid","age":48},{"pref":"Hybrid","age":53},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":63},{"pref":"Hybrid","age":37},{"pref":"Hybrid","age":32},{"pref":"Hybrid","age":68},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":67},{"pref":"Hybrid","age":53},{"pref":"Hybrid","age":59},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":78},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":78},{"pref":"Hybrid","age":45},{"pref":"Hybrid","age":31},{"pref":"Hybrid","age":47},{"pref":"Hybrid","age":45},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":34},{"pref":"Hybrid","age":37},{"pref":"Hybrid","age":58},{"pref":"Hybrid","age":69},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":40},{"pref":"Hybrid","age":24},{"pref":"Hybrid","age":58},{"pref":"Hybrid","age":38},{"pref":"Hybrid","age":61},{"pref":"Hybrid","age":65},{"pref":"Hybrid","age":58},{"pref":"Hybrid","age":48},{"pref":"Hybrid","age":27},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":61},{"pref":"Hybrid","age":43},{"pref":"Hybrid","age":76},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":35},{"pref":"Hybrid","age":52},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":78},{"pref":"Hybrid","age":29},{"pref":"Hybrid","age":26},{"pref":"Hybrid","age":59},{"pref":"Hybrid","age":34},{"pref":"Hybrid","age":66},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":78},{"pref":"Hybrid","age":70},{"pref":"Hybrid","age":40},{"pref":"Hybrid","age":68},{"pref":"Hybrid","age":74},{"pref":"Hybrid","age":75},{"pref":"Hybrid","age":57},{"pref":"Hybrid","age":52},{"pref":"Hybrid","age":41},{"pref":"Hybrid","age":20},{"pref":"Hybrid","age":43},{"pref":"Hybrid","age":39},{"pref":"Hybrid","age":18},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":48},{"pref":"Hybrid","age":75},{"pref":"Hybrid","age":69},{"pref":"Hybrid","age":23},{"pref":"Hybrid","age":33},{"pref":"Hybrid","age":25},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":34},{"pref":"Hybrid","age":59},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":21},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":66},{"pref":"Hybrid","age":65},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":62},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":67},{"pref":"Hybrid","age":29},{"pref":"Hybrid","age":24},{"pref":"Hybrid","age":70},{"pref":"Hybrid","age":79},{"pref":"Hybrid","age":73},{"pref":"Hybrid","age":63},{"pref":"Hybrid","age":20},{"pref":"Hybrid","age":49},{"pref":"Hybrid","age":77},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":68},{"pref":"Hybrid","age":20},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":74},{"pref":"Hybrid","age":55},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":60},{"pref":"Hybrid","age":41},{"pref":"Hybrid","age":51},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":57},{"pref":"Hybrid","age":40},{"pref":"Hybrid","age":54},{"pref":"Hybrid","age":18},{"pref":"Hybrid","age":41},{"pref":"Hybrid","age":18},{"pref":"Hybrid","age":71},{"pref":"Hybrid","age":55},{"pref":"Hybrid","age":24},{"pref":"Hybrid","age":42},{"pref":"Hybrid","age":29},{"pref":"Hybrid","age":19},{"pref":"Hybrid","age":30},{"pref":"Hybrid","age":77},{"pref":"Hybrid","age":43},{"pref":"Hybrid","age":79},{"pref":"Hybrid","age":36},{"pref":"Hybrid","age":73},{"pref":"Hybrid","age":22},{"pref":"Hybrid","age":46},{"pref":"Hybrid","age":33},{"pref":"Hybrid","age":64},{"pref":"Hybrid","age":51},{"pref":"Hybrid","age":21},{"pref":"Hybrid","age":55},{"pref":"Hybrid","age":57},{"pref":"Hybrid","age":74},{"pref":"Hybrid","age":45},{"pref":"Hybrid","age":62},{"pref":"Hybrid","age":50},{"pref":"Hybrid","age":72},{"pref":"Hybrid","age":68},{"pref":"Hybrid","age":39},{"pref":"Hybrid","age":34},{"pref":"Hybrid","age":40},{"pref":"Online","age":47},{"pref":"Online","age":78},{"pref":"Online","age":75},{"pref":"Online","age":76},{"pref":"Online","age":59},{"pref":"Online","age":36},{"pref":"Online","age":44},{"pref":"Online","age":65},{"pref":"Online","age":44},{"pref":"Online","age":52},{"pref":"Online","age":69},{"pref":"Online","age":54},{"pref":"Online","age":52},{"pref":"Online","age":23},{"pref":"Online","age":62},{"pref":"Online","age":77},{"pref":"Online","age":31},{"pref":"Online","age":18},{"pref":"Online","age":43},{"pref":"Online","age":40},{"pref":"Online","age":22},{"pref":"Online","age":64},{"pref":"Online","age":54},{"pref":"Online","age":70},{"pref":"Online","age":75},{"pref":"Online","age":20},{"pref":"Online","age":66},{"pref":"Online","age":75},{"pref":"Online","age":75},{"pref":"Online","age":48},{"pref":"Online","age":38},{"pref":"Online","age":69},{"pref":"Online","age":66},{"pref":"Online","age":42},{"pref":"Online","age":59},{"pref":"Online","age":68},{"pref":"Online","age":64},{"pref":"Online","age":43},{"pref":"Online","age":27},{"pref":"Online","age":53},{"pref":"Online","age":62},{"pref":"Online","age":33},{"pref":"Online","age":18},{"pref":"Online","age":57},{"pref":"Online","age":47},{"pref":"Online","age":56},{"pref":"Online","age":22},{"pref":"Online","age":72},{"pref":"Online","age":55},{"pref":"Online","age":45},{"pref":"Online","age":44},{"pref":"Online","age":73},{"pref":"Online","age":62},{"pref":"Online","age":77},{"pref":"Online","age":21},{"pref":"Online","age":54},{"pref":"Online","age":65},{"pref":"Online","age":22},{"pref":"Online","age":61},{"pref":"Online","age":71},{"pref":"Online","age":31},{"pref":"Online","age":67},{"pref":"Online","age":21},{"pref":"Online","age":37},{"pref":"Online","age":52},{"pref":"Online","age":57},{"pref":"Online","age":24},{"pref":"Online","age":57},{"pref":"Online","age":44},{"pref":"Online","age":60},{"pref":"Online","age":63},{"pref":"Online","age":25},{"pref":"Online","age":35},{"pref":"Online","age":18},{"pref":"Online","age":70},{"pref":"Online","age":29},{"pref":"Online","age":49},{"pref":"Online","age":31},{"pref":"Online","age":67},{"pref":"Online","age":35},{"pref":"Online","age":77},{"pref":"Online","age":44},{"pref":"Online","age":60},{"pref":"Online","age":54},{"pref":"Online","age":67},{"pref":"Online","age":57},{"pref":"Online","age":75},{"pref":"Online","age":20},{"pref":"Online","age":38},{"pref":"Online","age":57},{"pref":"Online","age":40},{"pref":"Online","age":73},{"pref":"Online","age":39},{"pref":"Online","age":44},{"pref":"Online","age":68},{"pref":"Online","age":66},{"pref":"Online","age":70},{"pref":"Online","age":77},{"pref":"Online","age":54},{"pref":"Online","age":77},{"pref":"Online","age":46},{"pref":"Online","age":52},{"pref":"Online","age":44},{"pref":"Online","age":69},{"pref":"Online","age":42},{"pref":"Online","age":32},{"pref":"Online","age":72},{"pref":"Online","age":65},{"pref":"Online","age":30},{"pref":"Online","age":60},{"pref":"Online","age":26},{"pref":"Online","age":75},{"pref":"Online","age":69},{"pref":"Online","age":59},{"pref":"Online","age":71},{"pref":"Online","age":57},{"pref":"Online","age":72},{"pref":"Online","age":31},{"pref":"Online","age":33},{"pref":"Online","age":42},{"pref":"Online","age":68},{"pref":"Online","age":73},{"pref":"Online","age":23},{"pref":"Online","age":31},{"pref":"Online","age":78},{"pref":"Online","age":78},{"pref":"Online","age":52},{"pref":"Online","age":73},{"pref":"Online","age":44},{"pref":"Online","age":58},{"pref":"Online","age":51},{"pref":"Online","age":42},{"pref":"Online","age":71},{"pref":"Online","age":20},{"pref":"Online","age":41},{"pref":"Online","age":48},{"pref":"Online","age":52},{"pref":"Online","age":71},{"pref":"Online","age":50},{"pref":"Online","age":23},{"pref":"Online","age":43},{"pref":"Online","age":60},{"pref":"Online","age":59},{"pref":"Online","age":24},{"pref":"Online","age":71},{"pref":"Online","age":54},{"pref":"Online","age":68},{"pref":"Online","age":18},{"pref":"Online","age":45},{"pref":"Online","age":42},{"pref":"Online","age":22},{"pref":"Online","age":41},{"pref":"Online","age":35},{"pref":"Online","age":74},{"pref":"Online","age":41},{"pref":"Online","age":48},{"pref":"Online","age":32},{"pref":"Online","age":30},{"pref":"Online","age":74},{"pref":"Online","age":65},{"pref":"Online","age":41},{"pref":"Online","age":65},{"pref":"Online","age":42},{"pref":"Online","age":29},{"pref":"Online","age":31},{"pref":"Online","age":37},{"pref":"Online","age":37},{"pref":"Online","age":40},{"pref":"Online","age":56},{"pref":"Online","age":40},{"pref":"Online","age":54},{"pref":"Online","age":30},{"pref":"Online","age":38},{"pref":"Online","age":76},{"pref":"Online","age":69},{"pref":"Online","age":54},{"pref":"Online","age":24},{"pref":"Online","age":54},{"pref":"Online","age":29},{"pref":"Online","age":71},{"pref":"Online","age":58},{"pref":"Online","age":70},{"pref":"Online","age":59},{"pref":"Online","age":37},{"pref":"Online","age":50},{"pref":"Online","age":44},{"pref":"Online","age":41},{"pref":"Online","age":41},{"pref":"Online","age":57},{"pref":"Online","age":70},{"pref":"Online","age":50},{"pref":"Online","age":48},{"pref":"Online","age":71},{"pref":"Online","age":49},{"pref":"Online","age":21},{"pref":"Online","age":38},{"pref":"Online","age":59},{"pref":"Online","age":20},{"pref":"Online","age":74},{"pref":"Online","age":57}],"q3":[{"metric":"Discounts","diff":-0.061},{"metric":"Payment Trust","diff":-0.082},{"metric":"Eco Awareness","diff":0.036},{"metric":"Delivery Fee Sens.","diff":0.02}],"q4":{"High Income":[{"ret":6,"inc":235868},{"ret":2,"inc":180166},{"ret":8,"inc":218177},{"ret":5,"inc":157097},{"ret":8,"inc":199103},{"ret":3,"inc":160265},{"ret":7,"inc":220888},{"ret":0,"inc":237078},{"ret":5,"inc":104432},{"ret":5,"inc":179429},{"ret":8,"inc":156292},{"ret":7,"inc":233874},{"ret":7,"inc":119697},{"ret":4,"inc":150064},{"ret":6,"inc":241406},{"ret":3,"inc":201795},{"ret":4,"inc":173070},{"ret":5,"inc":146255},{"ret":1,"inc":225659},{"ret":5,"inc":153518},{"ret":5,"inc":172341},{"ret":3,"inc":180301},{"ret":9,"inc":194022},{"ret":1,"inc":173795},{"ret":0,"inc":235386},{"ret":0,"inc":139579},{"ret":0,"inc":163572},{"ret":4,"inc":147019},{"ret":9,"inc":220538},{"ret":2,"inc":136123},{"ret":3,"inc":195116},{"ret":2,"inc":114152},{"ret":2,"inc":173818},{"ret":4,"inc":194311},{"ret":1,"inc":173278},{"ret":9,"inc":127673},{"ret":8,"inc":170647},{"ret":6,"inc":221422},{"ret":2,"inc":192175},{"ret":9,"inc":120664},{"ret":2,"inc":125990},{"ret":1,"inc":206869},{"ret":6,"inc":135738},{"ret":4,"inc":193417},{"ret":9,"inc":128855},{"ret":7,"inc":217105},{"ret":3,"inc":249484},{"ret":9,"inc":206239},{"ret":4,"inc":233339},{"ret":2,"inc":212471},{"ret":1,"inc":128535},{"ret":7,"inc":188453},{"ret":2,"inc":139501},{"ret":8,"inc":248931},{"ret":0,"inc":186714},{"ret":4,"inc":167015},{"ret":4,"inc":166527},{"ret":8,"inc":243953},{"ret":4,"inc":154317},{"ret":7,"inc":217617},{"ret":0,"inc":175389},{"ret":3,"inc":185690},{"ret":6,"inc":155849},{"ret":2,"inc":216264},{"ret":4,"inc":117840},{"ret":2,"inc":235319},{"ret":5,"inc":131062},{"ret":0,"inc":132928},{"ret":6,"inc":131894},{"ret":1,"inc":109702},{"ret":9,"inc":222328},{"ret":8,"inc":135356},{"ret":2,"inc":149760},{"ret":3,"inc":133642},{"ret":5,"inc":130613},{"ret":0,"inc":108885},{"ret":6,"inc":110687},{"ret":3,"inc":223270},{"ret":2,"inc":246110},{"ret":1,"inc":208979}],"Medium Income":[{"ret":8,"inc":59361},{"ret":9,"inc":60891},{"ret":9,"inc":40595},{"ret":2,"inc":64907},{"ret":4,"inc":32221},{"ret":5,"inc":96551},{"ret":5,"inc":96696},{"ret":4,"inc":98661},{"ret":3,"inc":42293},{"ret":9,"inc":71174},{"ret":9,"inc":97212},{"ret":9,"inc":53677},{"ret":3,"inc":91579},{"ret":5,"inc":99579},{"ret":5,"inc":49169},{"ret":9,"inc":96219},{"ret":8,"inc":78001},{"ret":9,"inc":57864},{"ret":7,"inc":64057},{"ret":2,"inc":43343},{"ret":4,"inc":68331},{"ret":4,"inc":63481},{"ret":4,"inc":96678},{"ret":8,"inc":63581},{"ret":6,"inc":56848},{"ret":0,"inc":45383},{"ret":5,"inc":43715},{"ret":9,"inc":87323},{"ret":4,"inc":55136},{"ret":8,"inc":80700},{"ret":9,"inc":48481},{"ret":6,"inc":32862},{"ret":0,"inc":85283},{"ret":8,"inc":41008},{"ret":4,"inc":80480},{"ret":9,"inc":60452},{"ret":9,"inc":91675},{"ret":7,"inc":90499},{"ret":2,"inc":58473},{"ret":0,"inc":87908},{"ret":4,"inc":78308},{"ret":8,"inc":93872},{"ret":9,"inc":92173},{"ret":1,"inc":72391},{"ret":2,"inc":35842},{"ret":2,"inc":68836},{"ret":9,"inc":52570},{"ret":5,"inc":79967},{"ret":3,"inc":75848},{"ret":9,"inc":89353},{"ret":4,"inc":83038},{"ret":9,"inc":32675},{"ret":2,"inc":81786},{"ret":0,"inc":47577},{"ret":1,"inc":97912},{"ret":2,"inc":80382},{"ret":1,"inc":43555},{"ret":4,"inc":57372},{"ret":4,"inc":53098},{"ret":4,"inc":76596},{"ret":6,"inc":96662},{"ret":2,"inc":75664},{"ret":2,"inc":41425},{"ret":9,"inc":76901},{"ret":1,"inc":93343},{"ret":6,"inc":89534},{"ret":9,"inc":74402},{"ret":5,"inc":97516},{"ret":9,"inc":39464},{"ret":8,"inc":52190},{"ret":8,"inc":73601},{"ret":6,"inc":44328},{"ret":9,"inc":96638},{"ret":1,"inc":71232},{"ret":1,"inc":98211},{"ret":3,"inc":30185},{"ret":1,"inc":73168},{"ret":2,"inc":91733},{"ret":3,"inc":85966},{"ret":6,"inc":35601}],"Low Income":[{"ret":6,"inc":19789},{"ret":4,"inc":20310},{"ret":7,"inc":19352},{"ret":7,"inc":27771},{"ret":2,"inc":25872},{"ret":3,"inc":16095},{"ret":5,"inc":18285},{"ret":4,"inc":25934},{"ret":2,"inc":20445},{"ret":5,"inc":18810},{"ret":9,"inc":18881},{"ret":2,"inc":25046},{"ret":2,"inc":20782},{"ret":6,"inc":21212},{"ret":3,"inc":20362},{"ret":6,"inc":20316},{"ret":9,"inc":19841},{"ret":6,"inc":19747},{"ret":7,"inc":24675},{"ret":9,"inc":19960},{"ret":5,"inc":22848},{"ret":9,"inc":29988},{"ret":2,"inc":24907},{"ret":3,"inc":16312},{"ret":4,"inc":29439},{"ret":5,"inc":27780},{"ret":0,"inc":25995},{"ret":8,"inc":18679},{"ret":5,"inc":21869},{"ret":6,"inc":16737},{"ret":8,"inc":18017},{"ret":1,"inc":17016},{"ret":4,"inc":15569},{"ret":8,"inc":15244},{"ret":2,"inc":25315},{"ret":7,"inc":22273},{"ret":8,"inc":16919},{"ret":5,"inc":29642},{"ret":2,"inc":29718},{"ret":4,"inc":16110},{"ret":2,"inc":16541},{"ret":4,"inc":17596},{"ret":6,"inc":25652},{"ret":1,"inc":17953},{"ret":2,"inc":24587},{"ret":2,"inc":21033},{"ret":1,"inc":22436},{"ret":7,"inc":29239},{"ret":5,"inc":15557},{"ret":3,"inc":19001},{"ret":0,"inc":22711},{"ret":9,"inc":26755},{"ret":7,"inc":17802},{"ret":1,"inc":23798},{"ret":2,"inc":17821},{"ret":7,"inc":15364},{"ret":4,"inc":18188},{"ret":8,"inc":29633},{"ret":5,"inc":16055},{"ret":5,"inc":29925},{"ret":8,"inc":15559},{"ret":2,"inc":17631},{"ret":3,"inc":17176},{"ret":2,"inc":28189},{"ret":0,"inc":21123},{"ret":9,"inc":19383},{"ret":8,"inc":17994},{"ret":2,"inc":23584},{"ret":3,"inc":29878},{"ret":9,"inc":24765},{"ret":9,"inc":27661},{"ret":1,"inc":17263},{"ret":4,"inc":27279},{"ret":1,"inc":21922},{"ret":5,"inc":21277},{"ret":8,"inc":29860},{"ret":4,"inc":26202},{"ret":1,"inc":22612},{"ret":4,"inc":16845},{"ret":2,"inc":20969}]},"q5":[{"factor":"Time Pressure","corr":-0.0034},{"factor":"Online Spend","corr":-0.0051},{"factor":"Monthly Income","corr":0.0085}],"q6":{"Low engagement":{"Store":86.0,"Online":10.6,"Hybrid":3.3},"Tech-savvy,\nwant to touch":{"Hybrid":3.8,"Store":86.4,"Online":9.8},"Tech-savvy\nonline shoppers":{"Store":79.2,"Hybrid":2.8,"Online":18.1},"Traditional\nshoppers":{"Store":93.4,"Online":3.9,"Hybrid":2.7}},"q7":[{"x":1,"avg":4.494,"se":0.084},{"x":2,"avg":4.503,"se":0.083},{"x":3,"avg":4.568,"se":0.083},{"x":4,"avg":4.357,"se":0.085},{"x":5,"avg":4.435,"se":0.084},{"x":6,"avg":4.521,"se":0.083},{"x":7,"avg":4.572,"se":0.083},{"x":8,"avg":4.507,"se":0.087},{"x":9,"avg":4.305,"se":0.087},{"x":10,"avg":4.405,"se":0.083}]};
+
+const C1='#00B4D8', C2='#7209B7', C3='#F72585', MUTED='#8884a8';
+const palPref = {Hybrid:C1, Online:C2, Store:C3};
+
+const tip = document.getElementById('tooltip');
+function showTip(e, html){ tip.innerHTML=html; tip.style.opacity=1; moveTip(e); }
+function moveTip(e){ tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px'; }
+function hideTip(){ tip.style.opacity=0; }
+document.addEventListener('mousemove', moveTip);
+
+/* ── Q1: Bubble chart, faceted by preference ── */
+(function(){
+  const prefs = ['Hybrid','Online','Store'];
+  const W = Math.min(1040, document.getElementById('chart-q1').parentElement.clientWidth - 32);
+  const pw = (W - 48) / 3, ph = 280, margin = {t:20,r:16,b:40,l:52};
+  const svg = d3.select('#chart-q1').append('svg').attr('width',W).attr('height',ph + 20);
+
+  // social media colour scale
+  const socialExt = d3.extent(DATA.q1, d=>d.social);
+  const colScale = d3.scaleSequential([socialExt[0],socialExt[1]], d3.interpolateRgbBasis([C1,C2,C3]));
+  const sizeScale = d3.scaleSqrt().domain(d3.extent(DATA.q1,d=>d.orders)).range([2,10]);
+
+  prefs.forEach((pref, pi) => {
+    const pts = DATA.q1.filter(d=>d.pref===pref);
+    const xExt = d3.extent(DATA.q1,d=>d.internet);
+    const yExt = d3.extent(DATA.q1,d=>d.spend);
+    const x = d3.scaleLinear().domain(xExt).nice().range([margin.l, pw - margin.r]);
+    const y = d3.scaleLinear().domain(yExt).nice().range([ph - margin.b, margin.t]);
+    const gx = pi * (pw + 16);
+    const g = svg.append('g').attr('transform',`translate(${gx},0)`);
+
+    // facet label
+    g.append('rect').attr('x',margin.l).attr('y',margin.t-2).attr('width',pw-margin.l-margin.r).attr('height',18)
+      .attr('fill','rgba(120,100,200,0.07)').attr('rx',3);
+    g.append('text').attr('x',(margin.l+pw-margin.r)/2).attr('y',margin.t+12)
+      .attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',12).attr('font-weight',500).text(pref);
+
+    g.append('g').attr('class','axis').attr('transform',`translate(0,${ph-margin.b})`).call(d3.axisBottom(x).ticks(4).tickSize(-ph+margin.t+margin.b+18));
+    if(pi===0) g.append('g').attr('class','axis').attr('transform',`translate(${margin.l},0)`).call(d3.axisLeft(y).ticks(4).tickSize(-pw+margin.l+margin.r).tickFormat(v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v));
+
+    g.selectAll('circle').data(pts).join('circle')
+      .attr('cx',d=>x(d.internet)).attr('cy',d=>y(d.spend))
+      .attr('r',d=>sizeScale(d.orders)).attr('fill',d=>colScale(d.social))
+      .attr('stroke','rgba(255,255,255,0.25)').attr('stroke-width',0.5).attr('opacity',0.85)
+      .on('mouseenter',(e,d)=>showTip(e,`<b>${d.pref}</b><br>Internet: ${d.internet}h<br>Spend: $${d.spend.toLocaleString()}<br>Orders: ${d.orders}/mo<br>Social: ${d.social}h`))
+      .on('mouseleave',hideTip);
+
+    if(pi===1) g.append('text').attr('x',(margin.l+pw-margin.r)/2).attr('y',ph+2)
+      .attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',11).text('Daily Internet Hours');
+    if(pi===0) g.append('text').attr('transform',`translate(12,${(ph-margin.b+margin.t)/2}) rotate(-90)`)
+      .attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',11).text('Avg Online Spend ($)');
+  });
+})();
+
+/* ── Q2: Violin chart (kernel density estimate) ── */
+(function(){
+  const prefs = ['Hybrid','Online','Store'];
+  const W = Math.min(1040, document.getElementById('chart-q2').parentElement.clientWidth - 32);
+  const margin = {t:20,r:20,b:40,l:52}, H=300;
+  const svg = d3.select('#chart-q2').append('svg').attr('width',W).attr('height',H);
+  const allAges = DATA.q2.map(d=>d.age);
+  const x = d3.scaleBand().domain(prefs).range([margin.l,W-margin.r]).padding(0.3);
+  const y = d3.scaleLinear().domain([d3.min(allAges)-2, d3.max(allAges)+2]).nice().range([H-margin.b, margin.t]);
+
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${H-margin.b})`).call(d3.axisBottom(x));
+  svg.append('g').attr('class','axis').attr('transform',`translate(${margin.l},0)`).call(d3.axisLeft(y).ticks(6).tickSize(-(W-margin.l-margin.r)));
+
+  // KDE
+  function kde(kernel, thresholds, data) { return thresholds.map(x=>([x, d3.mean(data, v=>kernel(x-v))])); }
+  function epan(bw){ return v=>Math.abs(v/=bw)<=1 ? 0.75*(1-v*v)/bw : 0; }
+  const ticks = d3.range(15,90,1);
+  const bw = 4;
+
+  prefs.forEach(pref => {
+    const pts = DATA.q2.filter(d=>d.pref===pref).map(d=>d.age);
+    const density = kde(epan(bw), ticks, pts);
+    const maxD = d3.max(density, d=>d[1]);
+    const bw2 = x.bandwidth()/2;
+    const vscale = d3.scaleLinear().domain([0,maxD]).range([0, bw2*0.9]);
+    const cx = x(pref) + bw2;
+    const area = d3.area().x0(d=>cx - vscale(d[1])).x1(d=>cx + vscale(d[1])).y(d=>y(d[0])).curve(d3.curveBasis);
+    svg.append('path').datum(density).attr('d',area).attr('fill',palPref[pref]).attr('opacity',0.55);
+    svg.append('path').datum(density)
+      .attr('d',d3.line().x(d=>cx+vscale(d[1])).y(d=>y(d[0])).curve(d3.curveBasis))
+      .attr('fill','none').attr('stroke',palPref[pref]).attr('stroke-width',1.5).attr('opacity',0.9);
+    svg.append('path').datum(density)
+      .attr('d',d3.line().x(d=>cx-vscale(d[1])).y(d=>y(d[0])).curve(d3.curveBasis))
+      .attr('fill','none').attr('stroke',palPref[pref]).attr('stroke-width',1.5).attr('opacity',0.9);
+
+    // jitter
+    const jpts = d3.shuffle(pts).slice(0,60);
+    svg.selectAll(null).data(jpts).join('circle')
+      .attr('cx',d=>cx+(Math.random()-0.5)*bw2*0.7).attr('cy',d=>y(d))
+      .attr('r',2).attr('fill','rgba(255,255,255,0.15)').attr('stroke',palPref[pref]).attr('stroke-width',0.5);
+
+    // mean diamond
+    const mean = d3.mean(pts);
+    const ds=7;
+    svg.append('polygon')
+      .attr('points',`${cx},${y(mean)-ds} ${cx+ds/1.5},${y(mean)} ${cx},${y(mean)+ds} ${cx-ds/1.5},${y(mean)}`)
+      .attr('fill','white').attr('stroke','#333').attr('stroke-width',1.2)
+      .on('mouseenter',(e)=>showTip(e,`<b>${pref}</b><br>Mean age: ${mean.toFixed(1)}`))
+      .on('mouseleave',hideTip);
+  });
+
+  svg.append('text').attr('x',margin.l-38).attr('y',(H-margin.b+margin.t)/2).attr('fill',MUTED).attr('font-size',11)
+    .attr('transform',`rotate(-90,${margin.l-38},${(H-margin.b+margin.t)/2})`).attr('text-anchor','middle').text('Customer Age');
+})();
+
+/* ── Q3: Diverging bar ── */
+(function(){
+  const data = DATA.q3.sort((a,b)=>a.diff-b.diff);
+  const W = Math.min(1040, document.getElementById('chart-q3').parentElement.clientWidth - 32);
+  const margin={t:10,r:120,b:20,l:150}, H=200;
+  const svg = d3.select('#chart-q3').append('svg').attr('width',W).attr('height',H);
+  const ext = d3.max(data, d=>Math.abs(d.diff));
+  const x = d3.scaleLinear().domain([-ext*1.3, ext*1.3]).range([margin.l, W-margin.r]);
+  const y = d3.scaleBand().domain(data.map(d=>d.metric)).range([margin.t, H-margin.b]).padding(0.35);
+
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${H/2})`).call(d3.axisBottom(x).ticks(5).tickFormat(d=>d>0?'+'+d.toFixed(3):d.toFixed(3)).tickSize(-(H-margin.t-margin.b)));
+  svg.append('line').attr('x1',x(0)).attr('x2',x(0)).attr('y1',margin.t).attr('y2',H-margin.b).attr('stroke','rgba(255,255,255,0.3)').attr('stroke-width',1.5);
+
+  data.forEach(d=>{
+    const col = d.diff > 0 ? C1 : C3;
+    svg.append('rect')
+      .attr('x',d.diff>0?x(0):x(d.diff)).attr('y',y(d.metric))
+      .attr('width',Math.abs(x(d.diff)-x(0))).attr('height',y.bandwidth())
+      .attr('fill',col).attr('rx',2).attr('opacity',0.85)
+      .on('mouseenter',(e)=>showTip(e,`<b>${d.metric}</b><br>Tier 1 − Tier 3: ${d.diff>0?'+':''}${d.diff}`))
+      .on('mouseleave',hideTip);
+    svg.append('text').attr('x',margin.l-8).attr('y',y(d.metric)+y.bandwidth()/2+4)
+      .attr('text-anchor','end').attr('fill',MUTED).attr('font-size',12).text(d.metric);
+    const lx = d.diff>0 ? x(d.diff)+5 : x(d.diff)-5;
+    svg.append('text').attr('x',lx).attr('y',y(d.metric)+y.bandwidth()/2+4)
+      .attr('text-anchor',d.diff>0?'start':'end').attr('fill','white').attr('font-size',11).attr('font-weight',500)
+      .text((d.diff>0?'+':'')+d.diff.toFixed(3));
+  });
+})();
+
+/* ── Q4: Jitter facets ── */
+(function(){
+  const groups = ['High Income','Medium Income','Low Income'];
+  const cols = [C1,C2,C3];
+  const W = Math.min(1040, document.getElementById('chart-q4').parentElement.clientWidth - 32);
+  const pw = (W-48)/3, ph=260, margin={t:30,r:12,b:40,l:62};
+  const svg = d3.select('#chart-q4').append('svg').attr('width',W).attr('height',ph);
+  const allIncs = groups.flatMap(g=>DATA.q4[g].map(d=>d.inc));
+  const allRets = groups.flatMap(g=>DATA.q4[g].map(d=>d.ret));
+  const retVals = [...new Set(allRets)].sort((a,b)=>a-b);
+
+  groups.forEach((grp,gi)=>{
+    const pts = DATA.q4[grp];
+    const gx = gi*(pw+16);
+    const g = svg.append('g').attr('transform',`translate(${gx},0)`);
+    const incExt = d3.extent(pts,d=>d.inc);
+    const y = d3.scaleLinear().domain(incExt).nice().range([ph-margin.b, margin.t]);
+    const x = d3.scalePoint().domain(retVals).range([margin.l,pw-margin.r]).padding(0.3);
+
+    g.append('rect').attr('x',margin.l).attr('y',margin.t-12).attr('width',pw-margin.l-margin.r).attr('height',16)
+      .attr('fill','rgba(120,100,200,0.07)').attr('rx',3);
+    g.append('text').attr('x',(margin.l+pw-margin.r)/2).attr('y',margin.t).attr('text-anchor','middle')
+      .attr('fill',MUTED).attr('font-size',11).attr('font-weight',500).text(grp);
+
+    g.append('g').attr('class','axis').attr('transform',`translate(0,${ph-margin.b})`).call(d3.axisBottom(x).tickSize(-ph+margin.t+margin.b));
+    if(gi===0) g.append('g').attr('class','axis').attr('transform',`translate(${margin.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v).tickSize(-(pw-margin.l-margin.r)));
+
+    g.selectAll('circle').data(pts).join('circle')
+      .attr('cx',d=>x(d.ret)+(Math.random()-0.5)*14).attr('cy',d=>y(d.inc))
+      .attr('r',2.5).attr('fill','rgba(200,200,200,0.25)').attr('stroke','rgba(200,200,200,0.4)').attr('stroke-width',0.3)
+      .on('mouseenter',(e,d)=>showTip(e,`Income: $${d.inc.toLocaleString()}<br>Returns: ${d.ret}`))
+      .on('mouseleave',hideTip);
+
+    // mean dots per ret value
+    retVals.forEach(rv=>{
+      const sub = pts.filter(d=>d.ret===rv);
+      if(!sub.length) return;
+      const mn = d3.mean(sub,d=>d.inc);
+      g.append('circle').attr('cx',x(rv)).attr('cy',y(mn)).attr('r',5)
+        .attr('fill',cols[gi]).attr('stroke','rgba(0,0,0,0.4)').attr('stroke-width',1)
+        .on('mouseenter',(e)=>showTip(e,`<b>${grp}</b><br>Return freq: ${rv}<br>Mean income: $${Math.round(mn).toLocaleString()}`))
+        .on('mouseleave',hideTip);
+    });
+    if(gi===1) g.append('text').attr('x',(margin.l+pw-margin.r)/2).attr('y',ph)
+      .attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',11).text('Return Frequency');
+  });
+})();
+
+/* ── Q5: Lollipop ── */
+(function(){
+  const data = [...DATA.q5].sort((a,b)=>a.corr-b.corr);
+  const W = Math.min(1040, document.getElementById('chart-q5').parentElement.clientWidth - 32);
+  const margin={t:20,r:80,b:20,l:140}, H=180;
+  const svg = d3.select('#chart-q5').append('svg').attr('width',W).attr('height',H);
+  const ext = Math.max(Math.abs(d3.min(data,d=>d.corr)), Math.abs(d3.max(data,d=>d.corr)))*1.4;
+  const x = d3.scaleLinear().domain([-ext,ext]).range([margin.l,W-margin.r]);
+  const y = d3.scaleBand().domain(data.map(d=>d.factor)).range([margin.t,H-margin.b]).padding(0.4);
+  const colScale = d3.scaleSequential([-ext,ext], d3.interpolateRgbBasis([C1,C2,C3]));
+
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${H-margin.b})`).call(d3.axisBottom(x).ticks(5).tickFormat(d=>d.toFixed(4)).tickSize(-(H-margin.t-margin.b)));
+  svg.append('line').attr('x1',x(0)).attr('x2',x(0)).attr('y1',margin.t).attr('y2',H-margin.b).attr('stroke','rgba(255,255,255,0.25)').attr('stroke-width',1);
+
+  data.forEach(d=>{
+    const cy = y(d.factor)+y.bandwidth()/2;
+    svg.append('text').attr('x',margin.l-8).attr('y',cy+4).attr('text-anchor','end').attr('fill',MUTED).attr('font-size',13).text(d.factor);
+    svg.append('line').attr('x1',x(0)).attr('x2',x(d.corr)).attr('y1',cy).attr('y2',cy)
+      .attr('stroke','rgba(180,170,220,0.4)').attr('stroke-width',2);
+    svg.append('circle').attr('cx',x(d.corr)).attr('cy',cy).attr('r',8).attr('fill',colScale(d.corr))
+      .on('mouseenter',(e)=>showTip(e,`<b>${d.factor}</b><br>r = ${d.corr.toFixed(4)}`))
+      .on('mouseleave',hideTip);
+    svg.append('text').attr('x',x(d.corr)+(d.corr>=0?13:-13)).attr('y',cy+4)
+      .attr('text-anchor',d.corr>=0?'start':'end').attr('fill','white').attr('font-size',11)
+      .text(d.corr.toFixed(4));
+  });
+  svg.append('text').attr('x',(margin.l+W-margin.r)/2).attr('y',H-2).attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',11).text('Correlation Coefficient');
+})();
+
+/* ── Q6: Stacked bar ── */
+(function(){
+  const quadOrder = ['Low engagement','Tech-savvy\nonline shoppers','Traditional\nshoppers','Tech-savvy,\nwant to touch'];
+  const quadLabels = ['Low engagement','Tech-savvy\nonline','Traditional\nshoppers','Tech-savvy\n+ touch'];
+  const prefs = ['Hybrid','Online','Store'];
+  const W = Math.min(1040, document.getElementById('chart-q6').parentElement.clientWidth - 32);
+  const margin={t:20,r:20,b:50,l:120}, H=280;
+  const svg = d3.select('#chart-q6').append('svg').attr('width',W).attr('height',H);
+  const x = d3.scaleBand().domain(quadLabels).range([margin.l,W-margin.r]).padding(0.25);
+  const y = d3.scaleLinear().domain([0,100]).range([H-margin.b,margin.t]);
+
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${H-margin.b})`).call(d3.axisBottom(x).tickSize(0));
+  svg.append('g').attr('class','axis').attr('transform',`translate(${margin.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d=>d+'%').tickSize(-(W-margin.l-margin.r)));
+
+  quadOrder.forEach((quad,qi)=>{
+    const ql = quadLabels[qi];
+    const qdata = DATA.q6[quad] || {};
+    let cumY = 0;
+    prefs.forEach(pref=>{
+      const pct = qdata[pref]||0;
+      if(!pct) return;
+      svg.append('rect')
+        .attr('x',x(ql)).attr('y',y(cumY+pct)).attr('width',x.bandwidth())
+        .attr('height',y(cumY)-y(cumY+pct)).attr('fill',palPref[pref]).attr('opacity',0.85).attr('rx',1)
+        .on('mouseenter',(e)=>showTip(e,`<b>${quad.replace(/\\n/g,' ')}</b><br>${pref}: ${pct.toFixed(1)}%`))
+        .on('mouseleave',hideTip);
+      if(pct > 6){
+        svg.append('text').attr('x',x(ql)+x.bandwidth()/2).attr('y',y(cumY+pct/2)+4)
+          .attr('text-anchor','middle').attr('fill','rgba(255,255,255,0.9)').attr('font-size',11).attr('font-weight',500)
+          .text(pct.toFixed(1)+'%');
+      }
+      cumY += pct;
+    });
+  });
+  svg.append('text').attr('x',margin.l-8).attr('y',(H-margin.b+margin.t)/2).attr('fill',MUTED).attr('font-size',11)
+    .attr('transform',`rotate(-90,${margin.l-42},${(H-margin.b+margin.t)/2})`).attr('text-anchor','middle').text('Share of Customers (%)');
+})();
+
+/* ── Q7: Ribbon + trend ── */
+(function(){
+  const data = DATA.q7;
+  const W = Math.min(1040, document.getElementById('chart-q7').parentElement.clientWidth - 32);
+  const margin={t:20,r:30,b:40,l:60}, H=280;
+  const svg = d3.select('#chart-q7').append('svg').attr('width',W).attr('height',H);
+  const x = d3.scaleLinear().domain([1,10]).range([margin.l,W-margin.r]);
+  const yExt = [d3.min(data,d=>d.avg-d.se)-0.1, d3.max(data,d=>d.avg+d.se)+0.1];
+  const y = d3.scaleLinear().domain(yExt).range([H-margin.b,margin.t]);
+
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${H-margin.b})`).call(d3.axisBottom(x).ticks(10).tickSize(-(H-margin.t-margin.b)));
+  svg.append('g').attr('class','axis').attr('transform',`translate(${margin.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W-margin.l-margin.r)));
+
+  // ribbon
+  const area = d3.area().x(d=>x(d.x)).y0(d=>y(d.avg-d.se)).y1(d=>y(d.avg+d.se)).curve(d3.curveCatmullRom);
+  svg.append('path').datum(data).attr('d',area).attr('fill',C2).attr('opacity',0.22);
+
+  // trend line
+  const n=data.length, sumX=d3.sum(data,d=>d.x), sumY=d3.sum(data,d=>d.avg);
+  const sumXY=d3.sum(data,d=>d.x*d.avg), sumX2=d3.sum(data,d=>d.x*d.x);
+  const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+  const intercept=(sumY-slope*sumX)/n;
+  svg.append('line')
+    .attr('x1',x(1)).attr('y1',y(slope*1+intercept))
+    .attr('x2',x(10)).attr('y2',y(slope*10+intercept))
+    .attr('stroke',C3).attr('stroke-width',1.5).attr('stroke-dasharray','5,4').attr('opacity',0.8);
+
+  // line
+  const line = d3.line().x(d=>x(d.x)).y(d=>y(d.avg)).curve(d3.curveCatmullRom);
+  svg.append('path').datum(data).attr('d',line).attr('fill','none').attr('stroke',C2).attr('stroke-width',2.2);
+
+  // dots
+  svg.selectAll('circle').data(data).join('circle')
+    .attr('cx',d=>x(d.x)).attr('cy',d=>y(d.avg)).attr('r',5)
+    .attr('fill',C2).attr('stroke',C2).attr('stroke-width',1)
+    .on('mouseenter',(e,d)=>showTip(e,`<b>Importance: ${d.x}</b><br>Avg returns: ${d.avg.toFixed(3)}<br>SE: ±${d.se.toFixed(3)}`))
+    .on('mouseleave',hideTip);
+
+  svg.append('text').attr('x',(margin.l+W-margin.r)/2).attr('y',H-2).attr('text-anchor','middle').attr('fill',MUTED).attr('font-size',11).text('Free Return Importance (1–10)');
+  svg.append('text').attr('x',margin.l-10).attr('y',(H-margin.b+margin.t)/2).attr('fill',MUTED).attr('font-size',11)
+    .attr('transform',`rotate(-90,${margin.l-42},${(H-margin.b+margin.t)/2})`).attr('text-anchor','middle').text('Average Return Frequency');
+})();
+</script>
+</body>
+</html>
